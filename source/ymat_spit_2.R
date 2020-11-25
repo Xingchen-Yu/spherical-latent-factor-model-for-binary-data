@@ -102,16 +102,6 @@ jacobian_init<-function(p){
   }
   return(kobe)
 }
-getcord_auto<-function(test,d){
-  sup = 1
-  for(i in 1:d){
-    nam <- paste("a", i, sep = "")
-    assign(nam, test[,i] )
-    sup =cbind(sup * sin(get(nam)),cos(get(nam)))
-  }
-  
-  return(sup)
-}
 
 spit_omega_true<-function(w,index){
   return(c(rep(1,index),rep(c_shrink,K - index))*w)
@@ -123,6 +113,8 @@ wrapper_variance<-function(xxx){
   vvv<-1-rrr
   return(vvv)
 }
+
+### mapping from embedded euclidean space to angles
 x_to_theta<-function(K,n_row,x_mat){
   theta_mat<-matrix(0,n_row,K)
   theta_mat[,1]<-atan2_new(x_mat[,2],x_mat[,1])
@@ -131,7 +123,17 @@ x_to_theta<-function(K,n_row,x_mat){
   }
   theta_mat 
 }
-
+### mapping from angles to embedded euclidean space
+getcord_auto<-function(test,K){
+  sup = 1
+  for(i in 1:K){
+    nam <- paste("a", i, sep = "")
+    assign(nam, test[,i] )
+    sup =cbind(sup * sin(get(nam)),cos(get(nam)))
+  }
+  
+  return(sup)
+}
 atan2_new<-function(x3,x4){
   temp = acos(x3/sqrt(x3^2+x4^2))
   sup = ifelse(x4>=0,temp,2*pi-temp)
