@@ -22,8 +22,8 @@ continue_seed = seed + 1122
 set.seed(seed)
 data = 1 ### 1 is for House/Senate (100-116) Data, 2 is simulation or input your own data
 House = T ### T if data = 1 and you want to run for House data 
-test = F ### random split 5% to be test data if T
-continue = T ### continue from the previous run
+test = T ### random split 5% to be test data if T
+continue = F ### continue from the previous run
 tunning = T ### Jittering for HMC and warmup for MH
 save_to_continue = T  #### T if you'd like to run more
 iter = 30000 ### Total iterations
