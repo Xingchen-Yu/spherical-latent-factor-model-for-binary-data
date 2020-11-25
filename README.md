@@ -1,4 +1,4 @@
-# spherical latent factor model for binary data
+# Spherical Latent Factor Model for Binary Data
 This repo includes the implementation of spherical latent factor model for binary data https://arxiv.org/pdf/2008.05109.pdf.
 
 During the implementation, we used the traditional coordinate systems https://en.wikipedia.org/wiki/N-sphere which has a one-to-one correspondance
