@@ -1,0 +1,1 @@
+coverage of 95% intervals: dim 1 0.970, dim 2 0.770

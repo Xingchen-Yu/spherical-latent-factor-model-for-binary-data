@@ -1,0 +1,27 @@
+K=3 I=4 J=5 sweeps=600000 grad=float32: 25 statistics, mean z=-0.17, sd z=1.17, max|z|=2.50 (beta_1: sin phi3), |z|>3: 0
+   acceptance beta/psi/zeta/kappa/omega/tau: [0.81 0.81 0.81 0.68 0.69 0.61]
+      omega                sampler +2.9984  prior +2.9996  z=-0.16
+      log omega            sampler +1.0123  prior +1.0129  z=-0.22
+      tau                  sampler +2.9958  prior +2.9987  z=-0.29
+      tau^2                sampler +10.4961  prior +10.4900  z=+0.09
+      lambda               sampler +0.1506  prior +0.1501  z=+1.67
+      log kappa_1          sampler +2.3976  prior +2.4049  z=-1.52
+      sqrt kappa_1         sampler +3.6561  prior +3.6656  z=-1.09
+      beta_1: cos phi1     sampler +0.7697  prior +0.7692  z=+0.31
+      beta_1: sin phi1     sampler -0.0005  prior +0.0001  z=-0.41
+      beta_1: cos 2phi2    sampler +0.9479  prior +0.9481  z=-0.74
+      beta_1: sin phi2     sampler +0.0002  prior +0.0000  z=+0.59
+      beta_1: cos 2phi3    sampler +0.9778  prior +0.9775  z=+2.25
+      beta_1: sin phi3     sampler -0.0005  prior -0.0001  z=-2.50
+      psi_1: cos phi1      sampler +0.7680  prior +0.7694  z=-0.96
+      psi_1: sin phi1      sampler +0.0025  prior -0.0005  z=+1.87
+      psi_1: cos 2phi2     sampler +0.9478  prior +0.9480  z=-0.83
+      psi_1: sin phi2      sampler -0.0001  prior -0.0001  z=-0.03
+      psi_1: cos 2phi3     sampler +0.9772  prior +0.9774  z=-1.56
+      psi_1: sin phi3      sampler +0.0002  prior -0.0000  z=+1.23
+      zeta_J: cos phi1     sampler +0.7686  prior +0.7695  z=-0.46
+      zeta_J: sin phi1     sampler +0.0005  prior -0.0002  z=+0.39
+      zeta_J: cos 2phi2    sampler +0.9476  prior +0.9481  z=-1.28
+      zeta_J: sin phi2     sampler -0.0003  prior +0.0001  z=-1.35
+      zeta_J: cos 2phi3    sampler +0.9773  prior +0.9774  z=-0.70
+      zeta_J: sin phi3     sampler +0.0002  prior -0.0000  z=+1.58

@@ -1,0 +1,8 @@
+K=1 I=4 J=5 sweeps=400000 grad=float32: 13 statistics, mean z=-0.18, sd z=1.04, max|z|=2.09 (lambda), |z|>3: 0
+   acceptance beta/psi/zeta/kappa/omega/tau: [0.99 0.99 0.99 0.68 0.74 0.7 ]
+      omega                sampler +2.9994  prior +2.9990  z=+0.06
+      tau                  sampler +3.0072  prior +3.0001  z=+0.88
+      lambda               sampler +0.1508  prior +0.1500  z=+2.09
+      log kappa_1          sampler +2.3975  prior +2.4055  z=-1.35
+      beta_1: cos phi1     sampler +0.7686  prior +0.7693  z=-0.48
+      psi_1: cos phi1      sampler +0.7697  prior +0.7695  z=+0.13
