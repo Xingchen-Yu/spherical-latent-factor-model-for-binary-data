@@ -1,0 +1,25 @@
+[project]
+name = "sphfactor"
+version = "0.1.0"
+description = "Bayesian spherical latent factor model for binary data (Yu & Rodriguez), in JAX"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "jax>=0.12.0.1",
+    "jax[cuda12]>=0.12.0.1; sys_platform == 'linux'",  # CUDA on the Linux GPU box; CPU-only elsewhere
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.4",
+    "pandas>=3.1.1",
+    "pyreadr>=0.5.2",  # reads the .Rdata simulation files in ../data
+    "scipy>=1.18.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mpmath>=1.4.1",
+    "pytest>=9.1.1",
+]

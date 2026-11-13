@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+results/
+scratch/
+*.egg-info/
+.pytest_cache/
+HANDOFF.md
