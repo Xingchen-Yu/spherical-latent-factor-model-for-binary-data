@@ -1,0 +1,12 @@
+p=4 (K=3) I=4 J=5 sweeps=100000: 28 statistics, mean z=-0.74, sd z=4.21, max|z|=8.89 (zeta_J: cos 2a2); |z|>3: 12
+   acc beta 0.647025 yes 0.636562 no 0.637144 kappa 0.675926 omega 0.68874 tau 0.60445
+      omega                  sampler mean +3.0502   prior mean +3.0010   z=+2.54
+      tau                    sampler mean +3.1573   prior mean +2.9987   z=+7.35
+      lambda                 sampler mean +0.1505   prior mean +0.1500   z=+0.62
+      log kappa_1            sampler mean +2.4011   prior mean +2.4056   z=-0.46
+      beta_1: cos a1         sampler mean -0.7743   prior mean -0.7694   z=-1.50
+      beta_1: cos 2a2        sampler mean -0.9511   prior mean -0.9480   z=-5.13
+      psi_1: cos a1          sampler mean -0.7896   prior mean -0.7692   z=-5.83
+      psi_1: cos 2a2         sampler mean -0.9538   prior mean -0.9480   z=-8.22
+      beta_1: cos 2a3        sampler mean -0.9784   prior mean -0.9775   z=-3.09
+      zeta_J: cos 2a3        sampler mean -0.9797   prior mean -0.9775   z=-7.48

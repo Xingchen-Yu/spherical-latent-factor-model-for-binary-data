@@ -1,0 +1,6 @@
+armadillo-*/
+harness
+geweke
+harness.cpp
+geweke.cpp
+__pycache__/

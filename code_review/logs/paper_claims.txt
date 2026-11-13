@@ -1,0 +1,23 @@
+(a) link limit, eq. (linklimit): ratio g_kappa(z)/Gaussian at z = 1 and 2 standard deviations (sd = pi^2/sqrt(2k+1))
+   kappa=    50 z=1sd: as printed   1.6569   with exponent (2k+1)z^2/(2 pi^4)   1.0050
+   kappa=    50 z=2sd: as printed   7.4817   with exponent (2k+1)z^2/(2 pi^4)   1.0125
+   kappa=   500 z=1sd: as printed   1.6495   with exponent (2k+1)z^2/(2 pi^4)   1.0005
+   kappa=   500 z=2sd: as printed   7.3983   with exponent (2k+1)z^2/(2 pi^4)   1.0013
+   kappa=  5000 z=1sd: as printed   1.6488   with exponent (2k+1)z^2/(2 pi^4)   1.0000
+   kappa=  5000 z=2sd: as printed   7.3900   with exponent (2k+1)z^2/(2 pi^4)   1.0001
+   kappa= 50000 z=1sd: as printed   1.6487   with exponent (2k+1)z^2/(2 pi^4)   1.0000
+   kappa= 50000 z=2sd: as printed   7.3891   with exponent (2k+1)z^2/(2 pi^4)   1.0000
+(b) vMF vs Gaussian normalising constants (ratio of the two as omega grows), d = 3 and 6
+   d=3 omega=   10: vs (w/2pi)^(d/2) as printed  0.7927   vs (w/2pi)^((d-1)/2)  1.0000
+   d=3 omega=  100: vs (w/2pi)^(d/2) as printed  0.2507   vs (w/2pi)^((d-1)/2)  1.0000
+   d=3 omega= 1000: vs (w/2pi)^(d/2) as printed  0.0793   vs (w/2pi)^((d-1)/2)  1.0000
+   d=6 omega=   10: vs (w/2pi)^(d/2) as printed  0.9654   vs (w/2pi)^((d-1)/2)  1.2180
+   d=6 omega=  100: vs (w/2pi)^(d/2) as printed  0.2554   vs (w/2pi)^((d-1)/2)  1.0190
+   d=6 omega= 1000: vs (w/2pi)^(d/2) as printed  0.0794   vs (w/2pi)^((d-1)/2)  1.0019
+(c) Euclidean footnote: z = mu + sum_k alpha_k beta_k, K = 3000
+   Var(z)=1.0040 (claimed 1)   excess kurtosis=0.572 (normal: 0; analytic limit 0.6)
+   KS test of theta vs Uniform(0,1): D=0.0092, p=3.5e-15;  Var(theta)=0.0808 (uniform: 0.0833)
+(d) SvM Gaussian limit (eq. limitprior) normalising constants, K=4, omega_k = w*k^2
+   w=   5: ratio at phi=0 = 0.9616
+   w=  50: ratio at phi=0 = 0.9964
+   w= 500: ratio at phi=0 = 0.9996

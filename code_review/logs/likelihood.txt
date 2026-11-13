@@ -1,0 +1,9 @@
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+worst case over p in {3,4,6,11} x 3 kappa regimes x 15 random configurations (n=20 terms each):
+  beta: rel err of log target value                       3.08e-08
+  beta: rel err of gradient (paper constraint)            2.10e-09
+  yes(psi): rel err of log target value                   3.00e-08
+  yes(psi): rel err of gradient (paper constraint)        2.10e-09
+  no(zeta): rel err of log target value                   3.85e-08
+  no(zeta): rel err of gradient (paper constraint)        2.10e-09
+  most extreme single log-probability exercised: -1238

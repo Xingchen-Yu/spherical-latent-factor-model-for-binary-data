@@ -1,0 +1,15 @@
+target                               acc  max|z| mean-resultant   min KS p (thinned)   angles tested
+SvM p= 3 k2   omega=2.0   K= 2      0.99      0.88                 0.730            2
+SvM p= 4 k2   omega=2.0   K= 3      0.99      1.75                 0.163            3
+SvM p= 6 k2   omega=2.0   K= 5      0.98      1.40                 0.270            5
+SvM p=11 k2   omega=2.0   K=10      0.96      2.00                 0.103            10
+SvM p=11 k2   omega=10.0  K=10      0.97      1.77                 0.018            10
+SvM p= 4 flat omega=2.0   K= 3      0.99      1.53                 0.390            3
+SvM p= 6 flat omega=2.0   K= 5      0.96      1.93                 0.074            5
+SvM p=11 flat omega=5.0   K=10      0.99      2.82                 0.048            10
+vMF p= 5 kappa=8.0                    0.98      0.14                 0.490            mu'x
+vMF p=11 kappa=20.0                   0.93      0.56                 0.745            mu'x
+p=11 flat omega=5.0 seed=101: z-scores [ 0.14  1.04 -0.08  2.14 -0.31 -0.74  0.73 -1.53 -0.33 -0.58]  min KS p=0.120
+p=11 flat omega=5.0 seed=202: z-scores [ 2.28  0.04  0.14  0.49 -1.54  0.77  1.42 -1.27  1.59  0.62]  min KS p=0.289
+p=11 k2 omega=10.0 seed=303: z-scores [ 2.85 -0.95  0.4  -0.5  -0.04  0.2  -1.41  0.21  1.21 -1.04]  min KS p=0.040
+p=11 k2 omega=10.0 seed=404: z-scores [-0.01  1.48 -1.36 -2.26 -0.23 -0.34  1.29 -0.83  1.76  0.07]  min KS p=0.222
