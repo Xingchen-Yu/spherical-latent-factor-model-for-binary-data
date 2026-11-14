@@ -58,3 +58,50 @@ Two things had to be assumed because they are not in the repository: the priors 
     src/sphfactor/euclid.py    Euclidean probit factor model (Albert-Chib Gibbs)
     src/sphfactor/analysis.py  principal nested spheres, Procrustes, R-hat
     src/sphfactor/data.py      .Rdata simulations and Voteview .ord files
+
+## What the reproduction shows (runs of 2026-11-13)
+
+Settings: 2 chains per fit, 10,000 burn-in + 20,000 kept sweeps for the simulations, 20,000 + 20,000 for the Senates.
+All numbers are in `figures/criteria_table.csv`; DIC is the paper's definition (larger is better).
+
+Reproduced:
+
+* **Dimension selection within the spherical family.** DIC picks the true dimension in every scenario
+  (K = 2, 3, 5 for the spherical data, K = 3 for the Euclidean data), and the accuracy and principal-nested-spheres
+  elbows sit at the same place (`figures/sim_scenarios.png`).
+* **Euclidean model needs one more dimension on spherical data.** Its DIC peaks at K = 3, 4, 6 in Scenarios 1 to 3
+  and at K = 3 in Scenario 4.
+* **Prior sensitivity.** The alternative hyperprior gives the same DIC choice, accuracy and positions
+  (`figures/sim_sensitivity*.png`).
+* **Senates, spherical family.** K = 3 is best for the 102nd Senate; K = 2 is best for the 115th, with K = 1 next,
+  as in the paper. The first nested-sphere component of the K = 8 fit explains 97% of the variance for the 115th and
+  74% for the 102nd. The 1D-Euclidean vs circular rank plots show the same pattern as the paper (agreement in the
+  102nd, disagreement among Republicans in the 115th).
+* **Coverage** on a new S^2 dataset with known truth: 97% (dimension 1) and 77% (dimension 2); the paper reports
+  98% and 68%.
+
+Not reproduced, and worth checking against the original Euclidean code before submission:
+
+* **Spherical vs Euclidean by DIC.** The paper says the best model overall is spherical in Scenarios 1 to 3 and for
+  the 115th Senate. Here the best Euclidean model has the higher DIC in Scenarios 2 and 3 under both Euclidean priors
+  tried (item-parameter variance 25 and 1), by about 200 to 550; in Scenario 1 the ranking flips with the prior
+  (Euclidean ahead by 180 with variance 25, spherical ahead by 200 with variance 1). For the 115th Senate the
+  Euclidean K = 2 model is ahead of the spherical K = 2 model by about 300. The Euclidean priors of the paper are not
+  in the repository, so this comparison depends on an assumption (`euclid.py`; rerun with
+  `scripts/euclidean_study.py --item-var`).
+  WAIC at the DIC-selected dimensions does favour the spherical model in Scenarios 1 to 3 and the Euclidean model in
+  Scenario 4.
+* **102nd Senate, Euclidean dimension.** The Euclidean DIC is nearly flat from K = 4 to 7 with its maximum at K = 6;
+  the paper reports K = 3.
+* **Nested-sphere share for the 102nd Senate.** The first three components explain 87% here; the paper says under
+  70%. The decomposition options of the original R package are unknown.
+
+Caveats on DIC itself:
+
+* The penalty 2 Var(loglik) is estimated from one chain's log-likelihood trace and is noisy: the two chains differ by
+  a few tens in DIC at the selected dimensions but by several hundred in some larger fits (the `dic_sd` column).
+  Differences of that size between models should not be read as evidence without more chains.
+* For the 115th Senate the Euclidean model with K = 9, 10 reaches 99.6% accuracy and its DIC rises again: with a
+  vague prior the probit model separates the data almost perfectly.
+* A few misspecified fits have chains in different modes (R-hat of the log-likelihood above 1.1: Scenario 1 K = 1,
+  Scenario 3 K = 1, 2, Scenario 4 K = 9, 10); none is at a selected dimension.
