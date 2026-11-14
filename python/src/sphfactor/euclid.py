@@ -1,11 +1,11 @@
 """Euclidean probit factor model, the comparison model of the paper (Section 2).
 
     P(y_ij = 1) = Phi(mu_j + alpha_j' beta_i),   beta_i in R^K
-    beta_i ~ N(0, I_K),   (mu_j, alpha_j) ~ N(0, item_var * I)
+    beta_ik ~ N(0, 1 / k^2),   (mu_j, alpha_j) ~ N(0, item_var * I),   item_var = 1
 
 fitted with the Albert & Chib (1993) data-augmentation Gibbs sampler.  The
-original Euclidean code is not in the repository, so the priors here are an
-assumption (the usual ones for ideal-point models; item_var = 25).
+priors are those of the original ``main_script/Euclidean_nd.R``; the k^2
+precisions shrink the higher dimensions like the spherical von Mises prior.
 
 Missing responses get an untruncated latent z_ij, which leaves the posterior
 of the parameters unchanged and keeps the conditional covariances shared
@@ -25,7 +25,7 @@ from jax.scipy.special import log_ndtr, ndtr, ndtri
 jax.config.update("jax_enable_x64", True)
 
 
-def _sweep(key, beta, mu, alpha, sign, item_var):
+def _sweep(key, beta, mu, alpha, sign, item_var, beta_prec):
     I, K = beta.shape
     J = mu.shape[0]
     kz, kb, ka = jax.random.split(key, 3)
@@ -37,8 +37,8 @@ def _sweep(key, beta, mu, alpha, sign, item_var):
     e_trunc = -ndtri(u * ndtr(-a))
     e_free = ndtri(u)
     z = m + jnp.where(sign == 0, e_free, s * e_trunc)
-    # beta_i | z: precision alpha'alpha + I, shared by all subjects
-    Vb = jnp.linalg.inv(alpha.T @ alpha + jnp.eye(K))
+    # beta_i | z: precision alpha'alpha + diag(beta_prec), shared by all subjects
+    Vb = jnp.linalg.inv(alpha.T @ alpha + jnp.diag(beta_prec))
     Lb = jnp.linalg.cholesky(Vb)
     beta = (z - mu[None, :]) @ alpha @ Vb + jax.random.normal(kb, (I, K)) @ Lb.T
     # (mu_j, alpha_j) | z: precision X'X + I / item_var, shared by all items
@@ -51,8 +51,13 @@ def _sweep(key, beta, mu, alpha, sign, item_var):
     return beta, mu, alpha, ll
 
 
-def sample_probit(y, K: int, n_samples=20_000, burnin=10_000, item_var=25.0, seed=0, n_beta_draws=1000) -> dict:
-    """Fit the K-dimensional probit factor model; returns criteria comparable with ``model.sample``."""
+def sample_probit(y, K: int, n_samples=20_000, burnin=10_000, item_var=1.0, shrink=True, seed=0, n_beta_draws=1000) -> dict:
+    """Fit the K-dimensional probit factor model; returns criteria comparable with ``model.sample``.
+
+    Defaults follow the original ``Euclidean_nd.R``: (mu_j, alpha_j) ~ N(0, I) and beta_ik ~ N(0, 1 / k^2), the
+    Euclidean counterpart of the spherical prior's k^2 precisions.  ``shrink=False`` gives beta_i ~ N(0, I).
+    """
+    beta_prec = jnp.arange(1, K + 1.0) ** 2 if shrink else jnp.ones(K)
     y = np.asarray(y, float)
     mask = ~np.isnan(y)
     sign = jnp.asarray(np.where(mask, 2 * np.nan_to_num(y) - 1, 0.0))
@@ -60,30 +65,40 @@ def sample_probit(y, K: int, n_samples=20_000, burnin=10_000, item_var=25.0, see
     rng = np.random.default_rng(seed)
     beta, mu, alpha = (jnp.asarray(v) for v in (rng.normal(size=(I, K)), np.zeros(J), 0.1 * rng.normal(size=(J, K))))
 
+    miss = jnp.asarray(~mask)
+
     @partial(jax.jit, static_argnames="n")
     def run(key, beta, mu, alpha, n):
-        def body(c, k):
-            beta, mu, alpha, lse, s1, s2 = c
-            beta, mu, alpha, ll = _sweep(k, beta, mu, alpha, sign, item_var)
-            return (beta, mu, alpha, jnp.logaddexp(lse, ll), s1 + ll, s2 + ll * ll), (ll.sum(), beta.astype(jnp.float32))
+        def body(c, x):
+            k, it = x
+            beta, mu, alpha, lse, s1, s2, simp = c
+            beta, mu, alpha, ll = _sweep(k, beta, mu, alpha, sign, item_var, beta_prec)
+            # Euclidean_nd.R: every 50 sweeps missing cells are set to the modal prediction, and its
+            # log-likelihood trace sums over all cells, imputed ones included (trace_r below)
+            m = mu[None, :] + beta @ alpha.T
+            simp = jnp.where(it % 50 == 0, jnp.where(m > 0, 1.0, -1.0), simp)
+            trace_r = ll.sum() + jnp.sum(jnp.where(miss, log_ndtr(simp * m), 0.0))
+            return (beta, mu, alpha, jnp.logaddexp(lse, ll), s1 + ll, s2 + ll * ll, simp), (ll.sum(), trace_r, beta.astype(jnp.float32))
 
-        init = (beta, mu, alpha, jnp.full((I, J), -jnp.inf), jnp.zeros((I, J)), jnp.zeros((I, J)))
-        return jax.lax.scan(body, init, jax.random.split(key, n))
+        init = (beta, mu, alpha, jnp.full((I, J), -jnp.inf), jnp.zeros((I, J)), jnp.zeros((I, J)), jnp.ones((I, J)))
+        return jax.lax.scan(body, init, (jax.random.split(key, n), jnp.arange(n)))
 
     t0 = time.perf_counter()
     k1, k2 = jax.random.split(jax.random.key(seed))
-    (beta, mu, alpha, *_), (trace0, _) = run(k1, beta, mu, alpha, burnin)
-    (beta, mu, alpha, lse, s1, s2), (trace, draws) = run(k2, beta, mu, alpha, n_samples)
+    (beta, mu, alpha, *_), (trace0, _, _) = run(k1, beta, mu, alpha, burnin)
+    (beta, mu, alpha, lse, s1, s2, _), (trace, trace_r, draws) = run(k2, beta, mu, alpha, n_samples)
     lse, s1, s2, trace = (np.asarray(v) for v in (lse, s1, s2, trace))
     S = n_samples
     log_mean_p = np.where(mask, lse - np.log(S), np.nan)
     lppd = float(np.nansum(log_mean_p))
     var_ll = float(np.var(trace, ddof=1))
+    var_r = float(np.var(np.asarray(trace_r), ddof=1))
     p_waic = float(np.sum((s2[mask] - s1[mask] ** 2 / S) / (S - 1)))
     keep = np.linspace(0, S - 1, min(n_beta_draws, S)).astype(int)
     return {
         "criteria": {"lppd": lppd, "var_loglik": var_ll, "dic": lppd - 2 * var_ll, "p_waic": p_waic, "elpd_waic": lppd - p_waic,
-                     "accuracy": float(np.mean(np.exp(log_mean_p[mask]) > 0.5)), "n_obs": int(mask.sum())},
+                     "accuracy": float(np.mean(np.exp(log_mean_p[mask]) > 0.5)), "n_obs": int(mask.sum()),
+                     "var_loglik_imputed": var_r, "dic_imputed": lppd - 2 * var_r},
         "loglik_trace": np.concatenate([np.asarray(trace0), trace]),
         "beta": np.asarray(draws)[keep],
         "seconds": time.perf_counter() - t0,

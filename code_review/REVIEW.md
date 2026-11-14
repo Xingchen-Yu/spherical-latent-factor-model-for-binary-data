@@ -232,3 +232,54 @@ Numerical evidence for 1–3 is in `logs/paper_claims.txt`.
     test_sampler*.py       check 4        test_geweke.py       checks 5–6
     test_prior_var.py      check 7        test_claims.py       check 8
     logs/                  output of the runs reported above
+
+## 6. Addendum: `main_script/Euclidean_nd.R` (added to the repository 2026-11-13)
+
+The Euclidean probit comparison model was not in the repository at the time of the review above. It was recovered from
+a backup and reviewed by reading it against the Gibbs conditionals (there is no R on the review machine, so it was not
+run). The JAX re-implementation (`python/src/sphfactor/euclid.py`) uses the same conditionals and priors and passes a
+Geweke joint-distribution test (`python/scripts/geweke_euclid.py`, log in `python/checks/geweke_euclid.txt`:
+max |z| = 2.3 over 15 moments, 400,000 sweeps, one missing cell).
+
+**Model and priors as coded.** P(y_ij = 1) = Φ(μ_j + α_j'β_i); (μ_j, α_j) ~ N(0, I_{p+1}); β_i ~ N(0, diag(1/k²)),
+k = 1..p (`p_mat = diag((1:p)^2)` is the prior precision). The k² precisions are the Euclidean counterpart of the
+spherical von Mises prior and are what makes the DIC penalise extra dimensions. **The paper does not state these
+priors** (Section 2 only says "hierarchical priors"); they should be written down, since the spherical-vs-Euclidean
+comparison depends on them (Section "What the reproduction shows" of `python/README.md`).
+
+**Sampler — correct.**
+
+* z_ij: truncated normal on (0, ∞) for y = 1 and (−∞, 0) for y = 0, mean μ_j + α_j'β_i, unit variance; untruncated
+  normal for missing cells. The index sets `yes`, `no`, `na` are fixed before the loop, so missing cells always get an
+  untruncated draw. That is the correct treatment (it integrates them out), and it is why one covariance matrix can be
+  shared by all items and by all subjects.
+* (μ_j, α_j): covariance (X'X + I)^{-1} with X = [1, β], mean V(X'z_j + Σ^{-1}a) — correct.
+* β_i: covariance (α'α + diag(k²))^{-1}, mean Vα'(z_i − μ) — correct. `t(zmat) - mu` recycles μ down the rows of a
+  J × I matrix, which is the intended subtraction.
+* Fitted probabilities, accuracy and the WAIC running sums — correct.
+
+**Points to know.**
+
+1. *Missing cells enter the log-likelihood trace, unlike in the spherical code.* Every 50 sweeps `ymat[na]` is
+   overwritten with the modal prediction, and `likeli_chain[jj] = sum(kobe)` sums over all cells of that `ymat`,
+   imputed ones included. The spherical script uses `sum(temp[no_na])`. The DIC penalty 2·Var(`likeli_chain`) of the
+   Euclidean model therefore contains the fluctuation of the imputed cells' log-probabilities and is larger than the
+   like-for-like value. No effect on the simulations (no missing data); for the Senates see
+   `python/README.md`. Fix: `likeli_chain[jj] = sum(kobe[no_na])`.
+2. *p = 1 does not run.* `alpha = mu_alpha_mat[,-1]` drops to a vector and `t(apply(po_mean_beta, 2, sample_rmvn))`
+   returns a 1 × I matrix, and `cov_master` needs two dimensions. The 1D Euclidean fits in the paper must have come
+   from different code; that code is not in the repository.
+3. *House only.* It sources `ymat_spit.R`, whose `ymat_spit(hn)` reads `H<hn>_votes.ord`; the Senate analyses need
+   the two-argument version in `ymat_spit_2.R`.
+4. `y_hat[-index_yes] = 0` does nothing when `index_yes` is empty (R's negative empty index selects nothing).
+   Practically irrelevant.
+5. No rotation or sign constraint on β, which is fine for DIC, WAIC and accuracy, but posterior means of β
+   (`beta_rs / n_pos`) are only meaningful if the chain stays in one orientation.
+6. The file computes WAIC only; the DIC of the paper is computed afterwards from the saved workspace
+   (`dic_compute` in `ymat_spit_2.R` does the same calculation).
+
+**Other files that exist in the backup but not in the repository:** `spherical_factor_model_simulation.R` (simulated
+data and fits), `paper2_simulation_plot.R` (all figures), `theta_ij_simulation.R` and `geodesic_nd_variance*.R` (prior
+figures), `spherical_factor_model_vmf.R` with `spherical_factor_model_wrapper_vmf.R` (von Mises–Fisher variant),
+`data/o1_2_sphdata.Rdata`. The sampler sources in the backup (`spherical_factor_model_wrapper.R`,
+`spherical_factor_model_omp.cpp`) are identical to the reviewed GitHub versions apart from one commented-out include.

@@ -340,7 +340,34 @@ def fig_senate():
     (OUT / "senate_ranks.txt").write_text("\n".join(out) + "\n")
 
 
+def fig_criteria():
+    """DIC, WAIC and their two ingredients side by side for every dataset."""
+    sim, sen, euc = rows("sim"), rows("senate"), rows("euclid")
+    data = [("sim_2", "Scenario 1 ($S^2$)", 2, sim), ("sim_3", "Scenario 2 ($S^3$)", 3, sim), ("sim_5", "Scenario 3 ($S^5$)", 5, sim),
+            ("ymat_eu_3", "Scenario 4 ($\\mathbb{R}^3$)", 3, sim), ("S102", "102nd Senate", None, sen), ("S115", "115th Senate", None, sen)]
+    data = [d for d in data if any(lab == d[0] for lab, _ in d[3])]
+    if not data:
+        return
+    cols = [("dic", "DIC = lppd $-$ 2 Var(loglik)"), ("elpd_waic", "WAIC = lppd $-$ $p_{WAIC}$"), ("var2", "DIC penalty"), ("p_waic", "WAIC penalty")]
+    for res in (sim, sen, euc):
+        for rr in res.values():
+            for r in rr:
+                r["var2"] = 2 * r["var_loglik"]
+    fig, axes = plt.subplots(len(data), 4, figsize=(12.5, 2.5 * len(data)), squeeze=False)
+    for i, (label, title, truth, sph) in enumerate(data):
+        for j, (key, t) in enumerate(cols):
+            crit_panel(axes[i, j], sph, euc, label, key, truth)
+            if i == 0:
+                axes[i, j].set_title(t)
+        axes[i, 0].set_ylabel(title)
+    axes[0, 0].legend()
+    for ax in axes[-1]:
+        ax.set_xlabel("dimension $K$")
+    fig.tight_layout()
+    save(fig, "criteria_dic_waic")
+
+
 if __name__ == "__main__":
-    which = sys.argv[1:] or ["prior", "sim", "senate"]
+    which = sys.argv[1:] or ["prior", "sim", "senate", "criteria"]
     for name in which:
-        {"prior": fig_prior, "sim": fig_sim, "senate": fig_senate}[name]()
+        {"prior": fig_prior, "sim": fig_sim, "senate": fig_senate, "criteria": fig_criteria}[name]()

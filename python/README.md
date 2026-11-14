@@ -46,8 +46,8 @@ post.beta        # (draws, I, K+1) positions on the sphere
     JAX_PLATFORMS=cpu uv run python scripts/euclidean_study.py # Euclidean probit comparison (CPU)
     JAX_PLATFORMS=cpu uv run python scripts/make_figures.py    # figures/ and figures/criteria_table.csv
 
-Two things had to be assumed because they are not in the repository: the priors of the Euclidean probit model
-(`euclid.py`) and the options of the principal-nested-spheres decomposition (`analysis.pns`).
+The Euclidean probit model (`euclid.py`) uses the priors of `main_script/Euclidean_nd.R`. One thing had to be assumed:
+the options of the principal-nested-spheres decomposition (`analysis.pns`).
 
 ## Layout
 

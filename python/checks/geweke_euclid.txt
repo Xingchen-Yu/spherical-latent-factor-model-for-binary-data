@@ -1,0 +1,16 @@
+E beta_1           mean  -0.0075  prior  0.0000  z  -1.36
+E beta_2           mean   0.0007  prior  0.0000  z   0.39
+E beta_3           mean  -0.0016  prior  0.0000  z  -2.16
+E beta_1^2         mean   0.9953  prior  1.0000  z  -0.77
+E beta_2^2         mean   0.2501  prior  0.2500  z   0.14
+E beta_3^2         mean   0.1108  prior  0.1111  z  -0.96
+E mu               mean  -0.0050  prior  0.0000  z  -0.98
+E mu^2             mean   0.9994  prior  1.0000  z  -0.11
+E alpha_1          mean  -0.0014  prior  0.0000  z  -0.27
+E alpha_2          mean  -0.0035  prior  0.0000  z  -1.16
+E alpha_3          mean  -0.0049  prior  0.0000  z  -2.29
+E alpha_1^2        mean   1.0020  prior  1.0000  z   0.35
+E alpha_2^2        mean   1.0056  prior  1.0000  z   1.84
+E alpha_3^2        mean   1.0012  prior  1.0000  z   0.52
+E beta_1 alpha_1   mean   0.0031  prior  0.0000  z   0.70
+max |z| = 2.29 over 15 moments

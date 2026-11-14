@@ -7,3 +7,5 @@ with the one mentioned in the paper. The correspondance can be achieved by postp
 
 
  
+
+`main_script/Euclidean_nd.R` (with `source/ymat_spit.R`) is the Euclidean probit factor model used as the comparison in the paper. Its prior on the latent positions has precision k^2 on dimension k (`p_mat = diag((1:p)^2)`), the Euclidean counterpart of the spherical von Mises prior's shrinkage.

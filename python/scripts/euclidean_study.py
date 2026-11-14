@@ -20,7 +20,8 @@ ap.add_argument("--out", default="results/euclid")
 ap.add_argument("--chains", type=int, default=2)
 ap.add_argument("--burnin", type=int, default=10_000)
 ap.add_argument("--samples", type=int, default=20_000)
-ap.add_argument("--item-var", type=float, default=25.0, help="prior variance of intercepts and discriminations")
+ap.add_argument("--item-var", type=float, default=1.0, help="prior variance of intercepts and discriminations")
+ap.add_argument("--no-shrink", action="store_true", help="beta_i ~ N(0, I) instead of the original N(0, diag(1/k^2))")
 a = ap.parse_args()
 out = Path(a.out)
 out.mkdir(parents=True, exist_ok=True)
@@ -36,7 +37,7 @@ for name in a.data:
             f = out / f"{name}_K{K}_s{seed}.npz"
             if f.exists():
                 continue
-            r = sample_probit(y, K, a.samples, a.burnin, item_var=a.item_var, seed=1000 * K + seed)
+            r = sample_probit(y, K, a.samples, a.burnin, item_var=a.item_var, shrink=not a.no_shrink, seed=1000 * K + seed)
             np.savez_compressed(f, loglik_trace=r["loglik_trace"], beta=r["beta"])
             row = {"label": name, "K": K, "seed": seed, **r["criteria"], "seconds": r["seconds"]}
             with open(out / "summary.jsonl", "a") as fh:
