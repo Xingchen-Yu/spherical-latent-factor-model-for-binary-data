@@ -1,2 +1,2 @@
-S102: largest rank differences: BRADLEY (16 -> 7), ROTH (77 -> 83), BROWN (87 -> 92), WIRTH (26 -> 22), HARKIN (2 -> 6)
-S115: largest rank differences: CORKER (64 -> 81), PAUL (83 -> 96), HELLER (50 -> 58), RUBIO (78 -> 72), THUNE (76 -> 70)
+S102: largest rank differences: BRADLEY (17 -> 7), ROTH (76 -> 83), BROWN (85 -> 92), CRANSTON (9 -> 4), WELLSTONE (5 -> 1)
+S115: largest rank differences: PAUL (49 -> 96), LEE (57 -> 95), CORKER (53 -> 81), FLAKE (66 -> 93), HOEVEN (74 -> 58)

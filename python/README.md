@@ -61,47 +61,55 @@ the options of the principal-nested-spheres decomposition (`analysis.pns`).
 
 ## What the reproduction shows (runs of 2026-11-13)
 
-Settings: 2 chains per fit, 10,000 burn-in + 20,000 kept sweeps for the simulations, 20,000 + 20,000 for the Senates.
-All numbers are in `figures/criteria_table.csv`; DIC is the paper's definition (larger is better).
+Settings: 2 chains per fit, 10,000 burn-in + 20,000 kept sweeps (20,000 + 20,000 for the spherical Senate fits).
+The Euclidean model uses the priors of `main_script/Euclidean_nd.R` (beta_ik ~ N(0, 1/k^2), item parameters N(0, I)).
+Missing votes are left out of the log-likelihood in both models. DIC is the paper's definition (larger is better).
+All numbers are in `figures/criteria_table.csv`.
 
-Reproduced:
+| Dataset | Best spherical (K, DIC) | Best Euclidean (K, DIC) | Paper |
+|---|---|---|---|
+| Scenario 1 (S^2) | 2, -26,268 | 3, -26,829 | spherical K = 2: reproduced |
+| Scenario 2 (S^3) | 3, -25,276 | 4, -25,771 | spherical K = 3: reproduced |
+| Scenario 3 (S^5) | 5, -27,069 | 6, -28,552 | spherical K = 5: reproduced |
+| Scenario 4 (R^3) | 3, -26,502 | 3, -26,415 | Euclidean K = 3, spherical close behind: reproduced |
+| 102nd Senate | 3, -16,488 | 3, -16,464 | Euclidean K = 3 best: a tie here (see below) |
+| 115th Senate | 2, -6,671 (K = 1: -6,904) | 2, -7,297 | spherical K = 2, then K = 1: reproduced |
 
-* **Dimension selection within the spherical family.** DIC picks the true dimension in every scenario
-  (K = 2, 3, 5 for the spherical data, K = 3 for the Euclidean data), and the accuracy and principal-nested-spheres
-  elbows sit at the same place (`figures/sim_scenarios.png`).
-* **Euclidean model needs one more dimension on spherical data.** Its DIC peaks at K = 3, 4, 6 in Scenarios 1 to 3
-  and at K = 3 in Scenario 4.
-* **Prior sensitivity.** The alternative hyperprior gives the same DIC choice, accuracy and positions
-  (`figures/sim_sensitivity*.png`).
-* **Senates, spherical family.** K = 3 is best for the 102nd Senate; K = 2 is best for the 115th, with K = 1 next,
-  as in the paper. The first nested-sphere component of the K = 8 fit explains 97% of the variance for the 115th and
-  74% for the 102nd. The 1D-Euclidean vs circular rank plots show the same pattern as the paper (agreement in the
-  102nd, disagreement among Republicans in the 115th).
-* **Coverage** on a new S^2 dataset with known truth: 97% (dimension 1) and 77% (dimension 2); the paper reports
-  98% and 68%.
+Also reproduced:
 
-Not reproduced, and worth checking against the original Euclidean code before submission:
+* The Euclidean model needs one more dimension than the sphere on spherical data (K = 3, 4, 6).
+* Accuracy and principal-nested-spheres elbows at the true dimension (`figures/sim_scenarios.png`).
+* The alternative hyperprior gives the same DIC choice, accuracy and positions (`figures/sim_sensitivity*.png`).
+* Principal nested spheres (great subspheres, K = 8 fit): the first component explains 96% for the 115th Senate and
+  the first three 99%; for the 102nd Senate the first three explain 67% (paper: >95%, close to 99%, <70%).
+* 1D Euclidean vs circular ranks: agreement in the 102nd Senate, large disagreements among Republicans in the 115th
+  (`figures/senate_ranks.png`, `figures/senate_ranks.txt`).
 
-* **Spherical vs Euclidean by DIC.** The paper says the best model overall is spherical in Scenarios 1 to 3 and for
-  the 115th Senate. Here the best Euclidean model has the higher DIC in Scenarios 2 and 3 under both Euclidean priors
-  tried (item-parameter variance 25 and 1), by about 200 to 550; in Scenario 1 the ranking flips with the prior
-  (Euclidean ahead by 180 with variance 25, spherical ahead by 200 with variance 1). For the 115th Senate the
-  Euclidean K = 2 model is ahead of the spherical K = 2 model by about 300. The Euclidean priors of the paper are not
-  in the repository, so this comparison depends on an assumption (`euclid.py`; rerun with
-  `scripts/euclidean_study.py --item-var`).
-  WAIC at the DIC-selected dimensions does favour the spherical model in Scenarios 1 to 3 and the Euclidean model in
-  Scenario 4.
-* **102nd Senate, Euclidean dimension.** The Euclidean DIC is nearly flat from K = 4 to 7 with its maximum at K = 6;
-  the paper reports K = 3.
-* **Nested-sphere share for the 102nd Senate.** The first three components explain 87% here; the paper says under
-  70%. The decomposition options of the original R package are unknown.
+Differences from the paper:
 
-Caveats on DIC itself:
+* **102nd Senate.** Euclidean and spherical K = 3 are indistinguishable: the means differ by 24 and the two
+  Euclidean chains by 73.
+* **Scenario 1 coverage** (original data, truth from `data/o1_2_sphdata.Rdata`): 89% (dimension 1) and 64%
+  (dimension 2) when the posterior is aligned with the truth by axis reflections only, 94% and 58% after a Procrustes
+  rotation; the paper reports 98% and 68%. The dimension-2 shortfall is systematic: the posterior is more spread out
+  than the truth (`figures/sim_recovery_sim_2_reflection.png`).
 
-* The penalty 2 Var(loglik) is estimated from one chain's log-likelihood trace and is noisy: the two chains differ by
-  a few tens in DIC at the selected dimensions but by several hundred in some larger fits (the `dic_sd` column).
-  Differences of that size between models should not be read as evidence without more chains.
-* For the 115th Senate the Euclidean model with K = 9, 10 reaches 99.6% accuracy and its DIC rises again: with a
-  vague prior the probit model separates the data almost perfectly.
-* A few misspecified fits have chains in different modes (R-hat of the log-likelihood above 1.1: Scenario 1 K = 1,
-  Scenario 3 K = 1, 2, Scenario 4 K = 9, 10); none is at a selected dimension.
+DIC and WAIC (`figures/criteria_dic_waic.png`):
+
+* WAIC ranks the two geometries the same way as DIC at the selected dimensions in every dataset.
+* WAIC does not select a dimension: in the simulations it flattens at the true dimension but does not come down, and
+  for the Senates it keeps rising to K = 10. Its pointwise penalty saturates once the extra dimensions are shrunk,
+  while the DIC penalty 2 Var(log-likelihood) keeps growing.
+* The DIC penalty is estimated from one chain's log-likelihood trace and is noisy: chains differ by 10 to 80 at the
+  selected dimensions and by several hundred at some larger K (`dic_sd` column).
+
+Sensitivity of the comparison to choices that are easy to get wrong:
+
+* **Euclidean prior.** Without the k^2 shrinkage (beta_i ~ N(0, I); `--no-shrink`) the Euclidean model has the higher
+  DIC in Scenarios 2 and 3 (by about 200), i.e. the paper's conclusion reverses there.
+* **Missing votes.** The original `Euclidean_nd.R` summed its log-likelihood trace over imputed cells too. That
+  lowers the Euclidean DIC by 340 to 2,700 for the 102nd Senate and 600 to 1,150 for the 115th (`dic_imputed` in
+  `results/euclid/summary.jsonl`). Fixed in the R file.
+
+A few misspecified fits have chains in different modes (R-hat of the log-likelihood above 1.1 in
+`criteria_table.csv`); none is at a selected dimension.

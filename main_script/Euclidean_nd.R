@@ -147,7 +147,7 @@ for(i in 1:iter){
     mu_rs = mu_rs + mu
     alpha_rs = alpha_rs + alpha
     kobe = dbinom(ymat,1,pnorm(mean_mat),log = T)
-    likeli_chain[jj] = sum(kobe)
+    likeli_chain[jj] = sum(kobe[no_na]) ### observed cells only, as in the spherical model
     pos_pred = pos_pred+exp(kobe)
     pos_pred2 = pos_pred2+kobe
     pos_pred3 = pos_pred3+kobe^2

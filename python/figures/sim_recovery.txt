@@ -1,0 +1,4 @@
+sim_2, reflection alignment: coverage of 95% intervals dim 1 0.890, dim 2 0.640
+sim_2, procrustes alignment: coverage of 95% intervals dim 1 0.940, dim 2 0.580
+new_s2, reflection alignment: coverage of 95% intervals dim 1 0.970, dim 2 0.740
+new_s2, procrustes alignment: coverage of 95% intervals dim 1 0.970, dim 2 0.770

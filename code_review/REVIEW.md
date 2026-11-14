@@ -264,11 +264,14 @@ comparison depends on them (Section "What the reproduction shows" of `python/REA
    overwritten with the modal prediction, and `likeli_chain[jj] = sum(kobe)` sums over all cells of that `ymat`,
    imputed ones included. The spherical script uses `sum(temp[no_na])`. The DIC penalty 2·Var(`likeli_chain`) of the
    Euclidean model therefore contains the fluctuation of the imputed cells' log-probabilities and is larger than the
-   like-for-like value. No effect on the simulations (no missing data); for the Senates see
-   `python/README.md`. Fix: `likeli_chain[jj] = sum(kobe[no_na])`.
+   like-for-like value: by 340 to 2,700 for the 102nd Senate and 600 to 1,150 for the 115th in the JAX reruns, which
+   is as large as the spherical-vs-Euclidean differences. No effect on the simulations (no missing data).
+   **Fixed in the repository copy** (`likeli_chain[jj] = sum(kobe[no_na])`), at the author's request.
 2. *p = 1 does not run.* `alpha = mu_alpha_mat[,-1]` drops to a vector and `t(apply(po_mean_beta, 2, sample_rmvn))`
-   returns a 1 × I matrix, and `cov_master` needs two dimensions. The 1D Euclidean fits in the paper must have come
-   from different code; that code is not in the repository.
+   returns a 1 × I matrix, and `cov_master` needs two dimensions. The 1D Euclidean fits in the paper came from
+   `Euclidean_1d.R` of the circular-model repository. That file was read too: the sampler is correct, its prior
+   β_i ~ N(0, 1) is the k = 1 case of the prior here, and it has the same missing-cell issue as point 1 (imputation
+   every 25 sweeps, trace summed over all cells); it was not edited.
 3. *House only.* It sources `ymat_spit.R`, whose `ymat_spit(hn)` reads `H<hn>_votes.ord`; the Senate analyses need
    the two-argument version in `ymat_spit_2.R`.
 4. `y_hat[-index_yes] = 0` does nothing when `index_yes` is empty (R's negative empty index selects nothing).
@@ -278,8 +281,18 @@ comparison depends on them (Section "What the reproduction shows" of `python/REA
 6. The file computes WAIC only; the DIC of the paper is computed afterwards from the saved workspace
    (`dic_compute` in `ymat_spit_2.R` does the same calculation).
 
-**Other files that exist in the backup but not in the repository:** `spherical_factor_model_simulation.R` (simulated
+**Other scripts in the backup, read but not run.** `theta_ij_simulation.R` and `geodesic_nd_variance*.R` (prior
+figures) sample the prior correctly; `geodesic_nd_variance.R` seeds from the clock, so its figure is not exactly
+reproducible. `spherical_factor_model_simulation.R` is an earlier version of the main script (one ω shared by
+subjects and items, hyperpriors Gam(0.1, 1) and λ rate 25), so it is not what produced the paper's results; its data
+generator matches the paper (all precisions 2) and draws κ_j ~ Gamma(50, rate 1/2). `paper2_simulation_plot.R`
+computes DIC as lppd − 2·Var(`likeli_chain`) for both models, uses `shapes::pns(..., sphere.type = "great")` on the
+normalised posterior mean, and computes Scenario 1 coverage from plain quantiles of the two angles after flipping
+the sign of the second. The vMF sampler variant (`spherical_factor_model_vmf.R` and its wrapper) was only compared
+with the main wrapper, not tested; it is not used for any result in the paper.
+
+**Files that exist in the backup but not in the repository:** `spherical_factor_model_simulation.R` (simulated
 data and fits), `paper2_simulation_plot.R` (all figures), `theta_ij_simulation.R` and `geodesic_nd_variance*.R` (prior
 figures), `spherical_factor_model_vmf.R` with `spherical_factor_model_wrapper_vmf.R` (von Mises–Fisher variant),
-`data/o1_2_sphdata.Rdata`. The sampler sources in the backup (`spherical_factor_model_wrapper.R`,
+`data/o1_2_sphdata.Rdata` (truth of Scenario 1; now added). The sampler sources in the backup (`spherical_factor_model_wrapper.R`,
 `spherical_factor_model_omp.cpp`) are identical to the reviewed GitHub versions apart from one commented-out include.

@@ -146,7 +146,7 @@ def crit_panel(ax, sph, euc, label, key, truth=None, elabel=None):
 def pns_panel(ax, post, color=BLUE, label=None, marker="o"):
     if post is None:
         return
-    _, pct = pns(unit(post["beta_mean"]))
+    _, pct = pns(unit(post["beta_mean"]), great=True)  # great subspheres, as in the original (shapes::pns, sphere.type = "great")
     ax.plot(range(1, len(pct) + 1), pct, color=color, marker=marker, label=label)
     ax.set_xticks(range(1, len(pct) + 1))
     ax.set_ylim(0, 100)
@@ -244,35 +244,55 @@ def fig_sim():
         fig.tight_layout()
         save(fig, "sim_sensitivity_positions")
 
-    # recovery of the true positions on the new S^2 dataset
-    post, tf = load("sim", "new_s2", 2), R / "sim" / "new_s2_truth.npz"
-    if post is not None and tf.exists():
-        from sphfactor.prior import to_angles
+    # recovery of the true positions: Scenario 1 (truth in data/o1_2_sphdata.Rdata) and a new S^2 dataset
+    from sphfactor.prior import from_r_coords, to_angles
 
-        truth = np.load(tf)["beta"]
-        Q = procrustes_rotation(unit(post["beta_mean"]), truth)
-        draws = np.asarray(to_angles(unit(post["beta"].astype(float)) @ Q))  # (B, I, 2)
+    def truth_of(name):
+        if name == "sim_2":
+            import rdata
+
+            f = Path(__file__).resolve().parents[2] / "data" / "o1_2_sphdata.Rdata"
+            a = np.asarray(rdata.conversion.convert(rdata.parser.parse_file(f))["o1"][1])[:, :2]  # R angles
+            xr = np.stack([np.sin(a[:, 0]) * np.sin(a[:, 1]), np.cos(a[:, 0]) * np.sin(a[:, 1]), np.cos(a[:, 1])], axis=1)
+            return np.asarray(from_r_coords(xr))
+        f = R / "sim" / f"{name}_truth.npz"
+        return np.load(f)["beta"] if f.exists() else None
+
+    wrap = lambda a: np.mod(a + np.pi, 2 * np.pi) - np.pi
+    report = []
+    for name, title in (("sim_2", "Scenario 1"), ("new_s2", "new $S^2$ dataset")):
+        post, truth = load("sim", name, 2), truth_of(name)
+        if post is None or truth is None:
+            continue
         t = np.asarray(to_angles(truth))
-        wrap = lambda a: np.mod(a + np.pi, 2 * np.pi) - np.pi
-        fig, axes = plt.subplots(1, 2, figsize=(9, 3.4))
-        cover = []
-        for k, ax in enumerate(axes):
-            dev = wrap(draws[:, :, k] - t[None, :, k]) if k == 0 else draws[:, :, k] - t[None, :, k]
-            lo, med, hi = np.quantile(dev, [0.025, 0.5, 0.975], axis=0)
-            order = np.argsort(t[:, k])
-            x = np.arange(len(order))
-            ax.vlines(x, (t[:, k] + lo)[order], (t[:, k] + hi)[order], color=BLUE, linewidth=1)
-            ax.plot(x, (t[:, k] + med)[order], linestyle="none", marker="o", color=BLUE, markersize=2.5, label="posterior median, 95% interval")
-            ax.plot(x, t[order, k], linestyle="none", marker="^", color=ORANGE, markersize=3.5, label="truth")
-            c = np.mean((lo <= 0) & (hi >= 0))
-            cover.append(c)
-            ax.set_title(f"Dimension {k + 1}: coverage {100 * c:.0f}%")
-            ax.set_xlabel("subject (sorted by true value)")
-            ax.set_ylabel(f"$\\beta_{{i,{k + 1}}}$")
-        axes[0].legend()
-        fig.tight_layout()
-        save(fig, "sim_recovery_new_s2")
-        (OUT / "sim_recovery_new_s2.txt").write_text(f"coverage of 95% intervals: dim 1 {cover[0]:.3f}, dim 2 {cover[1]:.3f}\n")
+        x = unit(post["beta"].astype(float))
+        # two alignments: reflections of the coordinate axes only (as in the original analysis, where the prior
+        # fixes the axes), and a full Procrustes rotation of the posterior mean onto the truth
+        signs = [np.diag(sg) for sg in np.array(np.meshgrid(*[[1, -1]] * 3)).T.reshape(-1, 3)]
+        Qr = min(signs, key=lambda Q: np.sum((unit(post["beta_mean"]) @ Q - truth) ** 2))
+        Qp = procrustes_rotation(unit(post["beta_mean"]), truth)
+        for Q, how in ((Qr, "reflection"), (Qp, "procrustes")):
+            draws = np.asarray(to_angles(x @ Q))  # (B, I, 2)
+            fig, axes = plt.subplots(1, 2, figsize=(9, 3.4))
+            cover = []
+            for k, ax in enumerate(axes):
+                dev = wrap(draws[:, :, k] - t[None, :, k]) if k == 0 else draws[:, :, k] - t[None, :, k]
+                lo, med, hi = np.quantile(dev, [0.025, 0.5, 0.975], axis=0)
+                order = np.argsort(t[:, k])
+                xs = np.arange(len(order))
+                ax.vlines(xs, (t[:, k] + lo)[order], (t[:, k] + hi)[order], color=BLUE, linewidth=1)
+                ax.plot(xs, (t[:, k] + med)[order], linestyle="none", marker="o", color=BLUE, markersize=2.5, label="posterior median, 95% interval")
+                ax.plot(xs, t[order, k], linestyle="none", marker="^", color=ORANGE, markersize=3.5, label="truth")
+                c = np.mean((lo <= 0) & (hi >= 0))
+                cover.append(c)
+                ax.set_title(f"{title}, dimension {k + 1}: coverage {100 * c:.0f}%")
+                ax.set_xlabel("subject (sorted by true value)")
+                ax.set_ylabel(f"$\\beta_{{i,{k + 1}}}$")
+            axes[0].legend()
+            fig.tight_layout()
+            save(fig, f"sim_recovery_{name}_{how}")
+            report.append(f"{name}, {how} alignment: coverage of 95% intervals dim 1 {cover[0]:.3f}, dim 2 {cover[1]:.3f}")
+    (OUT / "sim_recovery.txt").write_text("\n".join(report) + "\n")
 
     # table of criteria + convergence
     lines = ["label,model,K,chains,dic_mean,dic_sd,lppd_mean,var_loglik_mean,elpd_waic_mean,accuracy_mean,rhat_loglik"]
